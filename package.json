@@ -1,0 +1,46 @@
+{
+  "name": "jirachromeextension",
+  "version": "1.0.0",
+  "description": "Chrome Extension for Jira",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development webpack --watch",
+    "build": "cross-env NODE_ENV=production webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nandangrover/jiraChromeExtension.git"
+  },
+  "keywords": [
+    "chrome",
+    "extension",
+    "jira",
+    "vue"
+  ],
+  "author": "Nandan Grover",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nandangrover/jiraChromeExtension/issues"
+  },
+  "homepage": "https://github.com/nandangrover/jiraChromeExtension#readme",
+  "devDependencies": {
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "cross-env": "^5.2.0",
+    "css-loader": "^1.0.1",
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "image-webpack-loader": "^4.5.0",
+    "style-loader": "^0.23.1",
+    "vue-loader": "^15.7.0",
+    "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "buefy": "^0.7.3",
+    "vue": "^2.6.10"
+  }
+}
