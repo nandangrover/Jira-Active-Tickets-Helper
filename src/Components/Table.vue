@@ -1,5 +1,6 @@
 <template>
   <div id="section-table">
+    <b-table :data="data" :columns="columns"></b-table>
   </div>
 </template>
 
@@ -9,26 +10,35 @@
 export default {
   name: 'issue-table',
   props: {
-    issues: {
+    data: {
+      type: Array,
+    },
+    columns: {
       type: Array,
     },
   },
 
   watch: {
-    test(newVal) {
-      // console.log(newVal);
-    }
   },
 
   computed: {
-    test() {
-      return this.issues;
-    }
   }
 }
 
 </script>
 
 <style scoped>
+.b-table {
+  overflow: scroll;
+  height: 160px;
+  width: 600px;
+  font-size: 14px;
+  padding: 12px;
+}
+
+#section-table {
+  display: inline-flex;
+  float: right;
+}
 
 </style>

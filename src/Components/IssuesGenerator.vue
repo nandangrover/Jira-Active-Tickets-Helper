@@ -1,6 +1,9 @@
 <template>
   <div id="section-issue">
     <button class="issue-generate" @click="getIssues">Generate Issues</button>
+    <button class="issue-generate" v-bind:class="{ disable: isActive }" @click="copyToClipboard">Copy Description</button>
+    <button class="issue-generate" v-bind:class="{ disable: isActive }">Export Excel</button>
+    <input ref="inputField" v-model="clipData">
   </div>
 </template>
 
@@ -11,7 +14,10 @@ import jira from '../gateways/jira';
 export default {
   name: 'issues-generator',
   props: {
-    issues: {
+    data: {
+      type: Array,
+    },
+    columns: {
       type: Array,
     },
   },
@@ -19,19 +25,27 @@ export default {
   data() {
     return {
       message: 'Hello World',
+      isActive: true,
       issuesRaw: [],
       filteredIssues: [],
-      data: [],
-      columns: [],
+      clipData: "",
     };
+  },
+
+  mounted() {
+    this.columns.push({ field: 'id', label: 'ID', });
+    this.columns.push({ field: 'description', label: 'Description', });
   },
 
   computed: {
   },
 
   watch: {
-    filteredIssues(newValue) {  
-      this.$emit('update:data', this.filteredIssues);
+    data(newValue) {  
+      this.$emit('update:data', this.data);
+    },
+    columns(newValue) {  
+      this.$emit('update:columns', this.data);
     }
   },
 
@@ -48,17 +62,31 @@ export default {
     
     generateData() {
       for (let i = 0; i < this.filteredIssues.length; i++) {
-        Object.keys(this.filteredIssues[i]).forEach((key) => {
-          console.log(key);
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`});
+          this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
+
+          console.log(this, `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
           
-        })
       }
+      // this.clipData = "wasssup"
+      
+      this.isActive = false;
+    },
+
+    copyToClipboard(event) {
+      console.log(this.$refs.inputField.value);
+      console.log(this.clipData);
+      
+      this.$refs.inputField.select();
+      document.execCommand('copy');
+    //  window.copy("hellllllll");
     }
   }
 };
 </script>
 
 <style scoped>
+
 .issue-generate {
   margin: 0 auto;
   border: 1px solid #c4c4c4;
@@ -73,6 +101,15 @@ export default {
   padding: 12px;
   top: 38px;
   left: 25px;
+  margin-right: 10px;
   cursor: pointer;
+}
+
+#section-issue {
+  display: inline-flex;
+}
+
+.disable {
+  background-color: #797777;
 }
 </style>
