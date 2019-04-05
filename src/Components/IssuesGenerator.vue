@@ -3,7 +3,13 @@
     <button class="issue-generate" @click="getIssues">Generate Issues</button>
     <button class="issue-generate" v-bind:class="{ disable: isActive }" @click="copyToClipboard">Copy Description</button>
     <button class="issue-generate" v-bind:class="{ disable: isActive }">Export Excel</button>
-    <input ref="inputField" v-model="clipData">
+    <textarea class="clipTextArea" ref="inputField" v-model="clipData" v-bind:class="{ showArea: addDisplay }"> </textarea>
+    <div class="align-bottom">
+      <b-taglist attached>
+        <b-tag type="is-dark" size="is-medium">Active Tickets</b-tag>
+        <b-tag type="is-success" size="is-medium">{{activeTicket}}</b-tag>
+      </b-taglist>
+    </div>
   </div>
 </template>
 
@@ -29,6 +35,8 @@ export default {
       issuesRaw: [],
       filteredIssues: [],
       clipData: "",
+      addDisplay: true,
+      activeTicket: ""
     };
   },
 
@@ -63,23 +71,17 @@ export default {
     generateData() {
       for (let i = 0; i < this.filteredIssues.length; i++) {
           this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`});
-          this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
-
-          console.log(this, `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
+          this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
           
       }
-      // this.clipData = "wasssup"
-      
+      this.activeTicket = this.filteredIssues.length;
       this.isActive = false;
     },
 
     copyToClipboard(event) {
-      console.log(this.$refs.inputField.value);
-      console.log(this.clipData);
-      
+      this.addDisplay = false;
       this.$refs.inputField.select();
       document.execCommand('copy');
-    //  window.copy("hellllllll");
     }
   }
 };
@@ -112,4 +114,22 @@ export default {
 .disable {
   background-color: #797777;
 }
+
+.clipTextArea {
+  margin: 0px;
+  position: absolute;
+  left: 615px;
+  top: -51px;
+}
+
+.showArea {
+  display: block;
+}
+
+.align-bottom {
+  position: absolute;
+  top: 116px;
+  left: 170px;
+}
+
 </style>

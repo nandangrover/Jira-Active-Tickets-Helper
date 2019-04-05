@@ -28,6 +28,10 @@ export default {
 
 </script>
 
+<style>
+
+</style>
+
 <style scoped>
 #app {
   height: 120px;
