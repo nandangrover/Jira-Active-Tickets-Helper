@@ -23,8 +23,8 @@ export default {
     data: {
       type: Array,
     },
-    columns: {
-      type: Array,
+    loading: {
+      type: Boolean,
     },
   },
 
@@ -36,31 +36,23 @@ export default {
       filteredIssues: [],
       clipData: "",
       addDisplay: true,
-      activeTicket: ""
+      activeTicket: "",
     };
-  },
-
-  mounted() {
-    this.columns.push({ field: 'id', label: 'ID', });
-    this.columns.push({ field: 'description', label: 'Description', });
   },
 
   computed: {
   },
 
-  watch: {
-    data(newValue) {  
-      this.$emit('update:data', this.data);
-    },
-    columns(newValue) {  
-      this.$emit('update:columns', this.data);
-    }
-  },
-
   methods: {
     async getIssues() {
-       this.issuesRaw = await jira.getIssues();
-       this.filter();
+      this.$root.$emit('update:loading', false);
+      this.issuesRaw = await jira.getIssues();
+      this.filter();
+    },
+
+    async getSingleIssue(key) {
+      let totalComments = await jira.getSingleIssue(key);
+      return totalComments.total;
     },
 
     filter() {
@@ -68,14 +60,15 @@ export default {
        this.generateData();
     },
     
-    generateData() {
+    async generateData() {
+      this.data.splice(0, this.data.length);
       for (let i = 0; i < this.filteredIssues.length; i++) {
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`});
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: await this.getSingleIssue(this.filteredIssues[i]['id'])});
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
-          
       }
       this.activeTicket = this.filteredIssues.length;
       this.isActive = false;
+      this.$root.$emit('update:loading', true);
     },
 
     copyToClipboard(event) {

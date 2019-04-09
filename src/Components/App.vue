@@ -2,11 +2,11 @@
   <div id="app">
     <issues-generator
       :data="data"
-      :columns="columns">
+      :loading="loading">
     </issues-generator>
     <issue-table
       :data.sync="data"
-      :columns.sync="columns">
+      :loading.sync="loading">
     </issue-table>
   </div>
 </template>
@@ -22,7 +22,14 @@ export default {
     return {
       data: [],
       columns: [],
+      loading: false,
     }
+  },
+
+  mounted() {
+    this.$root.$on('update:loading', () => {
+      this.loading = !this.loading;
+    })
   }
 }
 
