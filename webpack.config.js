@@ -2,7 +2,8 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const SRC = path.resolve(__dirname, 'src/images');
 const isDevEnv = process.env.NODE_ENV === 'development';
@@ -22,7 +23,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader']
+                use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
             {
                 test: /\.(jpe?g|png|gif|mp3)$/i,
@@ -30,10 +31,16 @@ module.exports = {
                 loaders: ['file-loader']
             },
             {
-                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                include: SRC,
-                loader: 'file-loader'
-            }
+                test: /\.(png|jpg|gif)$/i,
+                use: [
+                  {
+                    loader: 'url-loader',
+                    options: {
+                      limit: 8192
+                    }
+                  }
+                ]
+            },
         ]
     },
     "devtool": isDevEnv ? "source-map" : "",
@@ -52,5 +59,8 @@ module.exports = {
             debug: true
         }),
         new VueLoaderPlugin(),
+        new MiniCssExtractPlugin({
+            filename: 'scoped.css'
+        }),
     ]
 };

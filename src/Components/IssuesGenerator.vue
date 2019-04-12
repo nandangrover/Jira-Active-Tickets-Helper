@@ -1,8 +1,10 @@
 <template>
   <div id="section-issue">
-    <button class="issue-generate" @click="getIssues">Generate Issues</button>
-    <button class="issue-generate" v-bind:class="{ disable: isActive }" @click="copyToClipboard">Copy Description</button>
-    <button class="issue-generate" v-bind:class="{ disable: isActive }">Export Excel</button>
+    <div class="feature-button">
+      <button class="issue-generate" @click="getIssues">Generate Issues</button>
+      <button class="issue-generate" v-bind:class="{ disable: isActive }" 
+      @click="copyToClipboard">Copy Description</button>
+    </div>
     <textarea class="clipTextArea" ref="inputField" v-model="clipData" v-bind:class="{ showArea: addDisplay }"> </textarea>
     <div class="align-bottom">
       <b-taglist attached>
@@ -30,7 +32,6 @@ export default {
 
   data() {
     return {
-      message: 'Hello World',
       isActive: true,
       issuesRaw: [],
       filteredIssues: [],
@@ -40,19 +41,16 @@ export default {
     };
   },
 
-  computed: {
-  },
-
   methods: {
     async getIssues() {
-      this.$root.$emit('update:loading', false);
+      this.$root.$emit('update:loading');
       this.issuesRaw = await jira.getIssues();
       this.filter();
     },
 
     async getSingleIssue(key) {
       let totalComments = await jira.getSingleIssue(key);
-      return totalComments.total;
+      return totalComments;
     },
 
     filter() {
@@ -63,12 +61,14 @@ export default {
     async generateData() {
       this.data.splice(0, this.data.length);
       for (let i = 0; i < this.filteredIssues.length; i++) {
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: await this.getSingleIssue(this.filteredIssues[i]['id'])});
+          const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
+
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name});
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
       }
       this.activeTicket = this.filteredIssues.length;
       this.isActive = false;
-      this.$root.$emit('update:loading', true);
+      this.$root.$emit('update:loading');
     },
 
     copyToClipboard(event) {
@@ -85,7 +85,7 @@ export default {
 .issue-generate {
   margin: 0 auto;
   border: 1px solid #c4c4c4;
-  position: relative;
+  /* position: relative; */
   text-align: left;
   font-size: 15px;
   line-height: 21px;
@@ -94,14 +94,15 @@ export default {
   background-color: #1976d2;
   border-radius: 5px;
   padding: 12px;
-  top: 38px;
-  left: 25px;
+  /* top: 38px; */
+  /* left: 25px; */
   margin-right: 10px;
   cursor: pointer;
 }
 
 #section-issue {
-  display: inline-flex;
+  display: table-cell;
+  position: relative;
 }
 
 .disable {
@@ -112,7 +113,7 @@ export default {
   margin: 0px;
   position: absolute;
   left: 615px;
-  top: -51px;
+  top: -131px;
 }
 
 .showArea {
@@ -120,9 +121,22 @@ export default {
 }
 
 .align-bottom {
-  position: absolute;
-  top: 116px;
-  left: 170px;
+  position: relative;
+  /* top: 116px; */
+  display: flex;
+  justify-content: center;
+  /* right: 208px; */
+  padding-top: 40px;
+}
+
+.feature-button {
+  position: relative;
+  display: flex;
+  /* padding: 100px; */
+  padding-left: 80px;
+  padding-right: 90px;
+  padding: 20px 80px 0 90px;
+  /* margin-top: 30px; */
 }
 
 </style>

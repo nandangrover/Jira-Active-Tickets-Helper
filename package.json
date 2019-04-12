@@ -32,6 +32,7 @@
     "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
     "image-webpack-loader": "^4.5.0",
+    "mini-css-extract-plugin": "^0.6.0",
     "style-loader": "^0.23.1",
     "vue-loader": "^15.7.0",
     "vue-template-compiler": "^2.6.10",
@@ -40,8 +41,10 @@
     "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
+    "@mdi/js": "^3.5.95",
     "axios": "^0.18.0",
     "buefy": "^0.7.3",
+    "url-loader": "^1.1.2",
     "vue": "^2.6.10"
   }
 }
