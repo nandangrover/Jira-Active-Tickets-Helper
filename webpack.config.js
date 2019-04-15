@@ -54,7 +54,11 @@ module.exports = {
         {
           from: 'src/chrome/**/*',
           to: path.resolve(__dirname, 'dist'), flatten: true,
-        }
+        },
+        {
+            from: 'src/webfonts/*',
+            to: path.resolve(__dirname, 'dist/webfonts'), flatten: true,
+        },
         ], {
             debug: true
         }),

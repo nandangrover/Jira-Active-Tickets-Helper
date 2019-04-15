@@ -53,6 +53,15 @@ export default {
       return totalComments;
     },
 
+    async getCommitInfo(key) {
+      // console.log(key);
+      
+    let totalComments = await jira.getCommitInfo(key);
+    console.log(totalComments);
+    
+    return totalComments;
+    },
+
     filter() {
        this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue.fields.status.name !== 'Done');
        this.generateData();
@@ -62,6 +71,9 @@ export default {
       this.data.splice(0, this.data.length);
       for (let i = 0; i < this.filteredIssues.length; i++) {
           const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
+          const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
+          console.log(this.filteredIssues[i]['key']);
+          
 
           this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name});
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);

@@ -22,7 +22,7 @@ export default {
 
   getCommitInfo(key) {
     return axios
-      .get(`https://jira.cainc.com/rest/dev-status/latest/issue/detail?issueId=(${key})&applicationType=stash&dataType=repository`)
+      .get(`https://jira.cainc.com/rest/dev-status/latest/issue/summary?issueId=${key}`)
       .then(res => res.data);
   }
 }

@@ -4,13 +4,13 @@
       <img class="logo" :src="logo" /> 
     </div>
     <span class="icon-holder up" v-bind:class="{ hide: !iconState }" @click="toggleIcon">
-         <i class="fas fa-chevron-up"></i>
+      <i class="fas fa-chevron-up"></i>
     </span>
     <span class="icon-holder down" v-bind:class="{ hide: iconState }" @click="toggleIcon">
-         <i class="fas fa-chevron-down"></i>
+      <i class="fas fa-chevron-down"></i>
     </span>
     <span class="github-holder" @click="openGithub">
-        <i class="fab fa-github"></i>
+      <i class="fab fa-github"></i>
     </span>
   </div>
 </template>
