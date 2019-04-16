@@ -49,13 +49,13 @@ export default {
     },
 
     async getSingleIssue(key) {
-      let totalComments = await jira.getSingleIssue(key);
-      return totalComments;
+      let issue = await jira.getSingleIssue(key);
+      return issue;
     },
 
     async getCommitInfo(key) {
-    let totalComments = await jira.getCommitInfo(key);
-    return totalComments;
+    let issue = await jira.getCommitInfo(key);
+    return issue;
     },
 
     filter() {

@@ -1,7 +1,7 @@
 {
-  "name": "JIRA 2 Excel",
+  "name": "JIRA Active Tickets Helper",
   "version": "1.0",
-  "description": "Build an Extension!",
+  "description": "Jira Chrome Extension to help manage active tickets better.",
   "background": {
     "scripts": ["background.js"],
     "persistent": false
