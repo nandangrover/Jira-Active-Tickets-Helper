@@ -149,11 +149,11 @@ export default {
   height: 160px;
   font-size: 14px;
   padding: 12px;
+  min-width: 500px;
 }
 
 .defaultTable {
   overflow: hidden;
-  width: 500px;
 }
 
 #section-table {

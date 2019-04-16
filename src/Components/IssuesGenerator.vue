@@ -93,8 +93,7 @@ export default {
 .issue-generate {
   margin: 0 auto;
   border: 1px solid #c4c4c4;
-  /* position: relative; */
-  text-align: left;
+  text-align: center;
   font-size: 15px;
   line-height: 21px;
   border: none;
@@ -102,8 +101,6 @@ export default {
   background-color: #1976d2;
   border-radius: 5px;
   padding: 12px;
-  /* top: 38px; */
-  /* left: 25px; */
   margin-right: 10px;
   cursor: pointer;
 }
@@ -130,21 +127,17 @@ export default {
 
 .align-bottom {
   position: relative;
-  /* top: 116px; */
   display: flex;
   justify-content: center;
-  /* right: 208px; */
   padding-top: 40px;
 }
 
 .feature-button {
   position: relative;
   display: flex;
-  /* padding: 100px; */
   padding-left: 80px;
   padding-right: 90px;
   padding: 20px 80px 0 90px;
-  /* margin-top: 30px; */
 }
 
 </style>
