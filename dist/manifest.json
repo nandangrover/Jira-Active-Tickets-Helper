@@ -1,0 +1,34 @@
+{
+  "name": "JIRA 2 Excel",
+  "version": "1.0",
+  "description": "Build an Extension!",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://jira.cainc.com/*"],
+      "js": ["index.bundle.js"]
+    }
+  ], 
+  "page_action": {
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
+  },
+  "web_accessible_resources": [
+    "*"
+  ],
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "manifest_version": 2
+}
