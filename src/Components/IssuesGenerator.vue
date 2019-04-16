@@ -54,11 +54,7 @@ export default {
     },
 
     async getCommitInfo(key) {
-      // console.log(key);
-      
     let totalComments = await jira.getCommitInfo(key);
-    console.log(totalComments);
-    
     return totalComments;
     },
 
@@ -72,10 +68,10 @@ export default {
       for (let i = 0; i < this.filteredIssues.length; i++) {
           const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
           const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
-          console.log(this.filteredIssues[i]['key']);
-          
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name});
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.state});
+
+          // For copying data to clipboard
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
       }
       this.activeTicket = this.filteredIssues.length;

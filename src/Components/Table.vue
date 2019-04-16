@@ -2,7 +2,7 @@
   <div id="section-table">
     <b-table
     id="scrollbar"
-    v-bind:class="{ overflowHidden: hideScroll }"
+    v-bind:class="{ defaultTable: hideScroll }"
     :data="data"
     :loading="loading"
     backend-sorting
@@ -20,14 +20,20 @@
 
           <b-table-column field="comments" label="Comments" numeric sortable>
               <span class="tag" :class="type(props.row.comments)">
-                   {{ props.row.comments }}
+                {{ props.row.comments }}
               </span>
           </b-table-column>
 
           <b-table-column field="status" label="Status" sortable>
               <span class="tag" :class="type(10)">
-                   {{ props.row.status }}
+                {{ props.row.status }}
               </span>
+          </b-table-column>
+
+          <b-table-column field="pr" label="Pull Request" sortable>
+            <span class="tag" :class="type(props.row.pr === 'OPEN' ? 15 : 0)">
+                {{ props.row.pr }}
+            </span>
           </b-table-column>
       </template>
     </b-table>
@@ -81,26 +87,35 @@ export default {
     },
 
     filter(field) {
-      const map = {
+      const mapStatus = {
         "In Progress": 0,
         "Ready For Test": 1,
         "Ready for Review": 2
       }
+       const mapCommitInfo = {
+        "OPEN": 0,
+        "MERGED": 1,
+      }
       switch(field) {
         case 'comments':
-         this.data.sort((a, b) => {
-        return this.sortOrder.toLowerCase() === 'asc' ? a.comments - b.comments : b.comments - a.comments;
-      })
+          this.data.sort((a, b) => {
+            return this.sortOrder.toLowerCase() === 'asc' ? a.comments - b.comments : b.comments - a.comments;
+          })
         break;
         case 'status':
-       this.data.sort((a, b) => {
-        return  this.sortOrder.toLowerCase() === 'asc' ? map[a.status] - map[b.status] : map[b.status] - map[a.status];
-      })
+          this.data.sort((a, b) => {
+            return  this.sortOrder.toLowerCase() === 'asc' ? mapStatus[a.status] - mapStatus[b.status] : mapStatus[b.status] - mapStatus[a.status];
+          })
         break;
-         default:
-       this.data.sort((a, b) => {
-        return  map[a.status] - map[b.status];
-      })
+        case 'pr':
+          this.data.sort((a, b) => {
+            return  this.sortOrder.toLowerCase() === 'asc' ? mapCommitInfo[a.pr] - mapCommitInfo[b.pr] : mapCommitInfo[b.pr] - mapCommitInfo[a.pr];
+          })
+        break;
+        default:
+          this.data.sort((a, b) => {
+            return  map[a.status] - map[b.status];
+          })
         break;
       }
     },
@@ -113,15 +128,16 @@ export default {
           return 'is-warning'
       } else if (number >= 4 && number < 10) {
           return 'is-danger'
-      }
-      else if (number === 10) {
+      } else if (number === 10) {
         return 'is-primary'
+      } else if (number === 15) {
+        return 'basic'
       }
     },
 
     returnLink(link) {
       return `https://jira.cainc.com/browse/${link}`;
-    }
+    },
   }
 }
 
@@ -135,8 +151,9 @@ export default {
   padding: 12px;
 }
 
-.overflowHidden {
+.defaultTable {
   overflow: hidden;
+  width: 500px;
 }
 
 #section-table {
