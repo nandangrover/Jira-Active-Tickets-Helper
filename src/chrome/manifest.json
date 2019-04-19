@@ -1,6 +1,6 @@
 {
   "name": "JIRA Active Tickets Helper",
-  "version": "1.0",
+  "version": "1.0.6",
   "description": "Jira Chrome Extension to help manage active tickets better.",
   "background": {
     "scripts": ["background.js"],

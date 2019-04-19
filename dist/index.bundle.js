@@ -14834,7 +14834,7 @@ __webpack_require__.r(__webpack_exports__);
     },
 
     filter() {
-       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue.fields.status.name !== 'Done');
+       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue);
        this.generateData();
     },
     
@@ -14844,7 +14844,7 @@ __webpack_require__.r(__webpack_exports__);
           const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
           const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.state});
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY" });
 
           // For copying data to clipboard
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
@@ -15008,6 +15008,11 @@ __webpack_require__.r(__webpack_exports__);
       defaultSortOrder: 'desc',
       isTrue: true,
       hideScroll : true,
+      mapPr : {
+        "OPEN": 15,
+        "MERGED": 0,
+        "EMPTY": 15
+      },
     }
   },
 
@@ -15409,7 +15414,7 @@ var render = function() {
                       "span",
                       {
                         staticClass: "tag",
-                        class: _vm.type(props.row.pr === "OPEN" ? 15 : 0)
+                        class: _vm.type(_vm.mapPr[props.row.pr])
                       },
                       [
                         _vm._v(
@@ -24403,7 +24408,7 @@ axios__WEBPACK_IMPORTED_MODULE_0___default.a.defaults.headers.post['Content-Type
 
   getIssues() {
     return axios__WEBPACK_IMPORTED_MODULE_0___default.a
-      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher=currentUser()&&status!=Done`)
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20status!%3DDone%20AND%20status!%3DClosed`)
       .then(res => res.data);
   },
 

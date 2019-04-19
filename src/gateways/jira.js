@@ -10,7 +10,7 @@ export default {
 
   getIssues() {
     return axios
-      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher=currentUser()&&status!=Done`)
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20status!%3DDone%20AND%20status!%3DClosed`)
       .then(res => res.data);
   },
 

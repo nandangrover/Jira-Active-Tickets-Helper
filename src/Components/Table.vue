@@ -31,7 +31,7 @@
           </b-table-column>
 
           <b-table-column field="pr" label="Pull Request" sortable>
-            <span class="tag" :class="type(props.row.pr === 'OPEN' ? 15 : 0)">
+            <span class="tag" :class="type(mapPr[props.row.pr])">
                 {{ props.row.pr }}
             </span>
           </b-table-column>
@@ -64,6 +64,11 @@ export default {
       defaultSortOrder: 'desc',
       isTrue: true,
       hideScroll : true,
+      mapPr : {
+        "OPEN": 15,
+        "MERGED": 0,
+        "EMPTY": 15
+      },
     }
   },
 

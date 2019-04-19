@@ -59,7 +59,7 @@ export default {
     },
 
     filter() {
-       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue.fields.status.name !== 'Done');
+       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue);
        this.generateData();
     },
     
@@ -69,7 +69,7 @@ export default {
           const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
           const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.state});
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY" });
 
           // For copying data to clipboard
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
