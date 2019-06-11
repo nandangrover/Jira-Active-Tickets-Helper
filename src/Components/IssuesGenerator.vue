@@ -38,6 +38,7 @@ export default {
       clipData: "",
       addDisplay: true,
       activeTicket: "",
+      currentUser: [],
     };
   },
 
@@ -45,12 +46,23 @@ export default {
     async getIssues() {
       this.$root.$emit('update:loading');
       this.issuesRaw = await jira.getIssues();
+      this.currentUser = await jira.getUserInfo();
       this.filter();
     },
 
     async getSingleIssue(key) {
       let issue = await jira.getSingleIssue(key);
+      // Get history of when user started working on that issue
+      let startDate = this.startedWorkOn(issue.changelog);
+      issue.dateStartedWorking = startDate;
       return issue;
+    },
+
+    startedWorkOn(log) {
+      let { name } = this.currentUser;
+      let { histories } = log;
+      histories = histories.filter(({ author }) => author.name === name);
+      return histories[0].created;
     },
 
     async getCommitInfo(key) {
@@ -65,11 +77,13 @@ export default {
     
     async generateData() {
       this.data.splice(0, this.data.length);
+      // Empty clipData before generating new issues
+      this.clipData = '';
       for (let i = 0; i < this.filteredIssues.length; i++) {
           const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
           const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY" });
+          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: issue.dateStartedWorking});
 
           // For copying data to clipboard
           this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);

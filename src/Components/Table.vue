@@ -10,7 +10,7 @@
     :default-sort="[sortField, sortOrder]"
     @sort="onSort">
       <template slot-scope="props">
-          <b-table-column field="id" label="ID" :renderHtml="isTrue">
+          <b-table-column field="id" label="ID" :renderHtml="isTrue" numeric sortable>
               <a :href="returnLink(props.row.id)">{{ props.row.id }}</a>
           </b-table-column>
 
@@ -33,6 +33,11 @@
           <b-table-column field="pr" label="Pull Request" sortable>
             <span class="tag" :class="type(mapPr[props.row.pr])">
                 {{ props.row.pr }}
+            </span>
+          </b-table-column>
+          <b-table-column field="date" label="Assigned Date" numeric sortable>
+            <span class="tag" :class="type(15)">
+                {{ moment(props.row.date).format('dddd DD-MM-YYYY HH:mm') }}
             </span>
           </b-table-column>
       </template>
@@ -94,12 +99,14 @@ export default {
     filter(field) {
       const mapStatus = {
         "In Progress": 0,
-        "Ready For Test": 1,
-        "Ready for Review": 2
+        "To Do": 1,
+        "Ready For Test": 2,
+        "Ready for Review": 3
       }
        const mapCommitInfo = {
         "OPEN": 0,
-        "MERGED": 1,
+        "EMPTY": 1,
+        "MERGED": 2,
       }
       switch(field) {
         case 'comments':
@@ -109,17 +116,27 @@ export default {
         break;
         case 'status':
           this.data.sort((a, b) => {
-            return  this.sortOrder.toLowerCase() === 'asc' ? mapStatus[a.status] - mapStatus[b.status] : mapStatus[b.status] - mapStatus[a.status];
+            return this.sortOrder.toLowerCase() === 'asc' ? mapStatus[a.status] - mapStatus[b.status] : mapStatus[b.status] - mapStatus[a.status];
           })
         break;
         case 'pr':
           this.data.sort((a, b) => {
-            return  this.sortOrder.toLowerCase() === 'asc' ? mapCommitInfo[a.pr] - mapCommitInfo[b.pr] : mapCommitInfo[b.pr] - mapCommitInfo[a.pr];
+            return this.sortOrder.toLowerCase() === 'asc' ? mapCommitInfo[a.pr] - mapCommitInfo[b.pr] : mapCommitInfo[b.pr] - mapCommitInfo[a.pr];
+          })
+        break;
+        case 'id':
+          this.data.sort((a, b) => {
+            return this.sortOrder.toLowerCase() === 'asc' ? a.id.split('-')[1] - b.id.split('-')[1] : b.id.split('-')[1] - a.id.split('-')[1];
+          })
+        break;
+         case 'date':
+          this.data.sort((a, b) => {
+            return this.sortOrder.toLowerCase() === 'asc' ? this.moment(a.date) - this.moment(b.date) : this.moment(b.date) - this.moment(a.date);
           })
         break;
         default:
           this.data.sort((a, b) => {
-            return  map[a.status] - map[b.status];
+            return this.sortOrder.toLowerCase() === 'asc' ? b - a : a - b;
           })
         break;
       }

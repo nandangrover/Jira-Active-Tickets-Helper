@@ -2,6 +2,9 @@ import Vue from 'vue';
 import Buefy from 'buefy';
 import App from '../Components/App.vue';
 import resolveStyleSheet from '../utils/resolveStyleSheet.js';
+import moment from 'moment'
+
+Vue.prototype.moment = moment
 
 Vue.use(Buefy, {
   defaultIconPack: 'fas'

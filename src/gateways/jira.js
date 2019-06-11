@@ -5,7 +5,7 @@ export default {
   getUserInfo() {
     return axios
       .get(`https://jira.cainc.com/rest/api/2/myself`)
-      .then(res => console.log(res));
+      .then(res => res.data);
   },
 
   getIssues() {
@@ -16,7 +16,7 @@ export default {
 
   getSingleIssue(key) {
     return axios
-      .get(`https://jira.cainc.com/rest/api/2/issue/${key}`)
+      .get(`https://jira.cainc.com/rest/api/2/issue/${key}?expand=changelog`)
       .then(res => res.data);
   },
 
