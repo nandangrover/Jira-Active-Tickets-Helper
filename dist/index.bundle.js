@@ -32460,6 +32460,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -32479,20 +32486,48 @@ __webpack_require__.r(__webpack_exports__);
     return {
       isActive: true,
       issuesRaw: [],
-      filteredIssues: [],
+      modifiedIssues: [],
       clipData: "",
       addDisplay: true,
-      activeTicket: "",
+      activeTicket: 0,
       currentUser: [],
+      options: [
+      {
+        id: 'active',
+        name: 'Active Tickets'
+      },
+      {
+        id: 'all',
+        name: 'All Tickets'
+      },
+      {
+        id: 'done',
+        name: 'Done Tickets'
+      }],
+      selectedOption: 'active',
     };
   },
 
   methods: {
     async getIssues() {
       this.$root.$emit('update:loading');
-      this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getIssues();
       this.currentUser = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getUserInfo();
-      this.filter();
+
+      // Generate issue according to the selected Filter
+      switch(this.selectedOption) {
+        case 'all':
+          this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getAllIssues();
+        break;
+        case 'active':
+          this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getActiveIssues();
+          break;
+        case 'done':
+          this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getDoneTickets();
+        break;
+        default:
+        break; 
+      }
+      this.modifyIssues();
     },
 
     async getSingleIssue(key) {
@@ -32506,17 +32541,26 @@ __webpack_require__.r(__webpack_exports__);
     startedWorkOn(log) {
       let { name } = this.currentUser;
       let { histories } = log;
+      console.log(log);
       histories = histories.filter(({ author }) => author.name === name);
-      return histories[0].created;
+      return histories[0].created || 'No History Found';
     },
 
     async getCommitInfo(key) {
     let issue = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getCommitInfo(key);
     return issue;
     },
-
-    filter() {
-       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue);
+    
+    /**
+     * Modify issues to include the date parameter
+     */
+    modifyIssues() {
+      let startDate;
+       this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
+         startDate = this.startedWorkOn(issue.changelog);
+         issue.dateStartedWorking = startDate;
+         return issue;
+         });
        this.generateData();
     },
     
@@ -32524,16 +32568,16 @@ __webpack_require__.r(__webpack_exports__);
       this.data.splice(0, this.data.length);
       // Empty clipData before generating new issues
       this.clipData = '';
-      for (let i = 0; i < this.filteredIssues.length; i++) {
-          const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
-          const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
+      for (let i = 0; i < this.modifiedIssues.length; i++) {
+          // const issue = await this.getSingleIssue(this.modifiedIssues[i]['id']);
+          const commitInfo = await this.getCommitInfo(this.modifiedIssues[i]['id']);
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: issue.dateStartedWorking});
+          this.data.push({id: this.modifiedIssues[i]['key'], description: `${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}`, comments: this.modifiedIssues[i].fields.comment.total, status: this.modifiedIssues[i].fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ? commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: this.modifiedIssues[i].dateStartedWorking});
 
           // For copying data to clipboard
-          this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
+          this.clipData = this.clipData.concat(`${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}\n`);
       }
-      this.activeTicket = this.filteredIssues.length;
+      this.activeTicket = this.modifiedIssues.length;
       this.isActive = false;
       this.$root.$emit('update:loading');
     },
@@ -32882,14 +32926,14 @@ var render = function() {
     _c("div", { staticClass: "feature-button" }, [
       _c(
         "button",
-        { staticClass: "issue-generate", on: { click: _vm.getIssues } },
+        { staticClass: "button issue-generate", on: { click: _vm.getIssues } },
         [_vm._v("Generate Issues")]
       ),
       _vm._v(" "),
       _c(
         "button",
         {
-          staticClass: "issue-generate",
+          staticClass: "button issue-generate",
           class: { disable: _vm.isActive },
           on: { click: _vm.copyToClipboard }
         },
@@ -32925,18 +32969,46 @@ var render = function() {
       { staticClass: "align-bottom" },
       [
         _c(
-          "b-taglist",
-          { attrs: { attached: "" } },
+          "b-field",
           [
-            _c("b-tag", { attrs: { type: "is-dark", size: "is-medium" } }, [
-              _vm._v("Active Tickets")
-            ]),
-            _vm._v(" "),
-            _c("b-tag", { attrs: { type: "is-success", size: "is-medium" } }, [
-              _vm._v(_vm._s(_vm.activeTicket))
-            ])
+            _c(
+              "b-select",
+              {
+                attrs: { placeholder: "Select a Filter Option" },
+                model: {
+                  value: _vm.selectedOption,
+                  callback: function($$v) {
+                    _vm.selectedOption = $$v
+                  },
+                  expression: "selectedOption"
+                }
+              },
+              _vm._l(_vm.options, function(option) {
+                return _c(
+                  "option",
+                  { key: option.id, domProps: { value: option.id } },
+                  [
+                    _vm._v(
+                      "\n                  " +
+                        _vm._s(option.name) +
+                        "\n              "
+                    )
+                  ]
+                )
+              }),
+              0
+            )
           ],
           1
+        ),
+        _vm._v(" "),
+        _c(
+          "b-tag",
+          {
+            staticClass: "numberOfTickets",
+            attrs: { type: "is-dark", size: "is-medium" }
+          },
+          [_vm._v(_vm._s(_vm.activeTicket))]
         )
       ],
       1
@@ -42171,15 +42243,27 @@ axios__WEBPACK_IMPORTED_MODULE_0___default.a.defaults.headers.post['Content-Type
       .then(res => res.data);
   },
 
-  getIssues() {
+  getAllIssues() {
     return axios__WEBPACK_IMPORTED_MODULE_0___default.a
-      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20status!%3DDone%20AND%20status!%3DClosed`)
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()&maxResults=5000&fields=key,id,comment,status,summary&expand=changelog`)
+      .then(res => res.data);
+  },
+
+  getActiveIssues() {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default.a
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20status!%3DDone%20AND%20status!%3DClosed&fields=key,id,comment,status,summary&expand=changelog`)
+      .then(res => res.data);
+  },
+
+  getDoneTickets() {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default.a
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20(status%20%3DDone%20OR%20status%20%3D%20Closed%20)&fields=key,id,comment,status,summary&expand=changelog&maxResults=5000`)
       .then(res => res.data);
   },
 
   getSingleIssue(key) {
     return axios__WEBPACK_IMPORTED_MODULE_0___default.a
-      .get(`https://jira.cainc.com/rest/api/2/issue/${key}?expand=changelog`)
+      .get(`https://jira.cainc.com/rest/api/2/issue/${key}?expand=changelog&fields=comment,status,summary`)
       .then(res => res.data);
   },
 

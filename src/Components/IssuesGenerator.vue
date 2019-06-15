@@ -1,16 +1,23 @@
 <template>
   <div id="section-issue">
     <div class="feature-button">
-      <button class="issue-generate" @click="getIssues">Generate Issues</button>
-      <button class="issue-generate" v-bind:class="{ disable: isActive }" 
+      <button class="button issue-generate" @click="getIssues">Generate Issues</button>
+      <button class="button issue-generate" v-bind:class="{ disable: isActive }" 
       @click="copyToClipboard">Copy Description</button>
     </div>
     <textarea class="clipTextArea" ref="inputField" v-model="clipData" v-bind:class="{ showArea: addDisplay }"> </textarea>
     <div class="align-bottom">
-      <b-taglist attached>
-        <b-tag type="is-dark" size="is-medium">Active Tickets</b-tag>
-        <b-tag type="is-success" size="is-medium">{{activeTicket}}</b-tag>
-      </b-taglist>
+        <b-field>
+            <b-select v-model="selectedOption" placeholder="Select a Filter Option">
+                <option
+                    v-for="option in options"
+                    :value="option.id"
+                    :key="option.id">
+                    {{ option.name }}
+                </option>
+            </b-select>
+        </b-field>
+      <b-tag type="is-dark" size="is-medium" class="numberOfTickets">{{activeTicket}}</b-tag>
     </div>
   </div>
 </template>
@@ -34,20 +41,48 @@ export default {
     return {
       isActive: true,
       issuesRaw: [],
-      filteredIssues: [],
+      modifiedIssues: [],
       clipData: "",
       addDisplay: true,
-      activeTicket: "",
+      activeTicket: 0,
       currentUser: [],
+      options: [
+      {
+        id: 'active',
+        name: 'Active Tickets'
+      },
+      {
+        id: 'all',
+        name: 'All Tickets'
+      },
+      {
+        id: 'done',
+        name: 'Done Tickets'
+      }],
+      selectedOption: 'active',
     };
   },
 
   methods: {
     async getIssues() {
       this.$root.$emit('update:loading');
-      this.issuesRaw = await jira.getIssues();
       this.currentUser = await jira.getUserInfo();
-      this.filter();
+
+      // Generate issue according to the selected Filter
+      switch(this.selectedOption) {
+        case 'all':
+          this.issuesRaw = await jira.getAllIssues();
+        break;
+        case 'active':
+          this.issuesRaw = await jira.getActiveIssues();
+          break;
+        case 'done':
+          this.issuesRaw = await jira.getDoneTickets();
+        break;
+        default:
+        break; 
+      }
+      this.modifyIssues();
     },
 
     async getSingleIssue(key) {
@@ -61,17 +96,26 @@ export default {
     startedWorkOn(log) {
       let { name } = this.currentUser;
       let { histories } = log;
+      console.log(log);
       histories = histories.filter(({ author }) => author.name === name);
-      return histories[0].created;
+      return histories[0].created || 'No History Found';
     },
 
     async getCommitInfo(key) {
     let issue = await jira.getCommitInfo(key);
     return issue;
     },
-
-    filter() {
-       this.filteredIssues = this.issuesRaw.issues.filter((issue) => issue);
+    
+    /**
+     * Modify issues to include the date parameter
+     */
+    modifyIssues() {
+      let startDate;
+       this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
+         startDate = this.startedWorkOn(issue.changelog);
+         issue.dateStartedWorking = startDate;
+         return issue;
+         });
        this.generateData();
     },
     
@@ -79,16 +123,16 @@ export default {
       this.data.splice(0, this.data.length);
       // Empty clipData before generating new issues
       this.clipData = '';
-      for (let i = 0; i < this.filteredIssues.length; i++) {
-          const issue = await this.getSingleIssue(this.filteredIssues[i]['id']);  
-          const commitInfo = await this.getCommitInfo(this.filteredIssues[i]['id']);
+      for (let i = 0; i < this.modifiedIssues.length; i++) {
+          // const issue = await this.getSingleIssue(this.modifiedIssues[i]['id']);
+          const commitInfo = await this.getCommitInfo(this.modifiedIssues[i]['id']);
 
-          this.data.push({id: this.filteredIssues[i]['key'], description: `${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}`, comments: issue.fields.comment.total, status: issue.fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ?commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: issue.dateStartedWorking});
+          this.data.push({id: this.modifiedIssues[i]['key'], description: `${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}`, comments: this.modifiedIssues[i].fields.comment.total, status: this.modifiedIssues[i].fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ? commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: this.modifiedIssues[i].dateStartedWorking});
 
           // For copying data to clipboard
-          this.clipData = this.clipData.concat(`${this.filteredIssues[i]['key']}: ${this.filteredIssues[i]['fields']['summary']}\n`);
+          this.clipData = this.clipData.concat(`${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}\n`);
       }
-      this.activeTicket = this.filteredIssues.length;
+      this.activeTicket = this.modifiedIssues.length;
       this.isActive = false;
       this.$root.$emit('update:loading');
     },
@@ -112,7 +156,7 @@ export default {
   line-height: 21px;
   border: none;
   color: #fff;
-  background-color: #1976d2;
+  background-color: #194067;
   border-radius: 5px;
   padding: 12px;
   margin-right: 10px;
@@ -152,6 +196,10 @@ export default {
   padding-left: 80px;
   padding-right: 90px;
   padding: 20px 80px 0 90px;
+}
+
+.numberOfTickets {
+  margin-top: 2px;
 }
 
 </style>

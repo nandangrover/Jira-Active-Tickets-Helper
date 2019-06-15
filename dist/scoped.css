@@ -7,7 +7,7 @@
   line-height: 21px;
   border: none;
   color: #fff;
-  background-color: #1976d2;
+  background-color: #194067;
   border-radius: 5px;
   padding: 12px;
   margin-right: 10px;
@@ -41,6 +41,9 @@
   padding-left: 80px;
   padding-right: 90px;
   padding: 20px 80px 0 90px;
+}
+.numberOfTickets[data-v-715e4ad9] {
+  margin-top: 2px;
 }
 
 
