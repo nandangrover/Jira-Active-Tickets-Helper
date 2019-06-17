@@ -2,7 +2,8 @@ import Vue from 'vue';
 import Buefy from 'buefy';
 import App from '../Components/App.vue';
 import resolveStyleSheet from '../utils/resolveStyleSheet.js';
-import moment from 'moment'
+import moment from 'moment';
+import store from '../store'
 
 Vue.prototype.moment = moment
 
@@ -26,6 +27,7 @@ Promise.all([iconStyle, ...stylesList]).then(() => {
 
   new Vue({
     el: root,
+    store,
     render: createElement => createElement(App),
   });
 });

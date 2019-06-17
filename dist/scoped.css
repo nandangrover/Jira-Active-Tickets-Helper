@@ -9,7 +9,7 @@
   color: #fff;
   background-color: #194067;
   border-radius: 5px;
-  padding: 12px;
+  padding: 10px;
   margin-right: 10px;
   cursor: pointer;
 }
@@ -44,6 +44,11 @@
 }
 .numberOfTickets[data-v-715e4ad9] {
   margin-top: 2px;
+}
+.align-center[data-v-715e4ad9] {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 

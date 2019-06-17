@@ -1,52 +1,60 @@
 <template>
   <div id="section-table">
-    <b-table
-    id="scrollbar"
-    v-bind:class="{ defaultTable: hideScroll }"
-    :data="data"
-    :loading="loading"
-    backend-sorting
-    :default-sort-direction="defaultSortOrder"
-    :default-sort="[sortField, sortOrder]"
-    @sort="onSort">
-      <template slot-scope="props">
-          <b-table-column field="id" label="ID" :renderHtml="isTrue" numeric sortable>
-              <a :href="returnLink(props.row.id)">{{ props.row.id }}</a>
-          </b-table-column>
+    <section>
+      <b-table
+      id="scrollbar"
+      v-bind:class="{ defaultTable: hideScroll }"
+      :data="data"
+      :loading="loading"
+      backend-sorting
+      :default-sort-direction="defaultSortOrder"
+      :default-sort="[sortField, sortOrder]"
+      @sort="onSort">
+        <template slot-scope="props">
+            <b-table-column field="id" label="ID" :renderHtml="isTrue" numeric sortable>
+                <a :href="returnLink(props.row.id)">{{ props.row.id }}</a>
+            </b-table-column>
 
-          <b-table-column field="description" label="Description">
-             {{ props.row.description }}
-          </b-table-column>
+            <b-table-column field="description" label="Description">
+              {{ props.row.description }}
+            </b-table-column>
 
-          <b-table-column field="comments" label="Comments" numeric sortable>
-              <span class="tag" :class="type(props.row.comments)">
-                {{ props.row.comments }}
+            <b-table-column field="comments" label="Comments" numeric sortable>
+                <span class="tag" :class="type(props.row.comments)">
+                  {{ props.row.comments }}
+                </span>
+            </b-table-column>
+
+            <b-table-column field="status" label="Status" sortable>
+                <span class="tag" :class="type(1000)">
+                  {{ props.row.status }}
+                </span>
+            </b-table-column>
+
+            <b-table-column field="pr" label="Pull Request" sortable>
+              <span class="tag" :class="type(mapPr[props.row.pr])">
+                  {{ props.row.pr }}
               </span>
-          </b-table-column>
-
-          <b-table-column field="status" label="Status" sortable>
-              <span class="tag" :class="type(10)">
-                {{ props.row.status }}
+            </b-table-column>
+            <b-table-column field="dateAssigned" label="Assigned" numeric sortable>
+              <span class="tag" :class="type(1500)">
+                  {{ moment(props.row.dateAssigned).format('dd DD-MM-YYYY') }}
               </span>
-          </b-table-column>
-
-          <b-table-column field="pr" label="Pull Request" sortable>
-            <span class="tag" :class="type(mapPr[props.row.pr])">
-                {{ props.row.pr }}
-            </span>
-          </b-table-column>
-          <b-table-column field="date" label="Assigned Date" numeric sortable>
-            <span class="tag" :class="type(15)">
-                {{ moment(props.row.date).format('dddd DD-MM-YYYY HH:mm') }}
-            </span>
-          </b-table-column>
-      </template>
-    </b-table>
+            </b-table-column>
+            <b-table-column field="dateCompleted" label="Completed" numeric sortable>
+              <span class="tag" :class="type(1500)">
+                  {{ props.row.dateCompleted !== 'No History Found' ? moment(props.row.dateCompleted).format('dd DD-MM-YYYY') : 'No History Found'}}
+              </span>
+            </b-table-column>
+        </template>
+      </b-table>
+    </section>
   </div>
 </template>
 
 <script>
 
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'issue-table',
@@ -70,23 +78,25 @@ export default {
       isTrue: true,
       hideScroll : true,
       mapPr : {
-        "OPEN": 15,
+        "OPEN": 1500,
         "MERGED": 0,
-        "EMPTY": 15
+        "EMPTY": 1500
       },
     }
-  },
-
-  mounted() {
   },
 
   watch: {
     loading(newVal) {
       this.hideScroll = newVal;
+    },
+    activeSprint(value) {
+      console.log("hello", value);
+      
     }
   },
 
   computed: {
+   ...mapGetters['filter', { activeSprint: 'activeSprint' }],
   },
 
   methods: {
@@ -103,10 +113,13 @@ export default {
         "Ready For Test": 2,
         "Ready for Review": 3
       }
-       const mapCommitInfo = {
+      const mapCommitInfo = {
         "OPEN": 0,
         "EMPTY": 1,
         "MERGED": 2,
+      }
+      const mapCompletedDate = {
+        "No History Found" : 0,
       }
       switch(field) {
         case 'comments':
@@ -129,9 +142,14 @@ export default {
             return this.sortOrder.toLowerCase() === 'asc' ? a.id.split('-')[1] - b.id.split('-')[1] : b.id.split('-')[1] - a.id.split('-')[1];
           })
         break;
-         case 'date':
+        case 'dateAssigned':
           this.data.sort((a, b) => {
-            return this.sortOrder.toLowerCase() === 'asc' ? this.moment(a.date) - this.moment(b.date) : this.moment(b.date) - this.moment(a.date);
+            return this.sortOrder.toLowerCase() === 'asc' ? this.dateExists(a.dateAssigned) - this.dateExists(b.dateAssigned) : this.dateExists(b.dateAssigned) - this.dateExists(a.dateAssigned);
+          })
+        break;
+        case 'dateCompleted':
+          this.data.sort((a, b) => {
+            return this.sortOrder.toLowerCase() === 'asc' ? this.dateExists(a.dateCompleted) - this.dateExists(b.dateCompleted) : this.dateExists(b.dateCompleted) - this.dateExists(a.dateCompleted);
           })
         break;
         default:
@@ -148,11 +166,11 @@ export default {
           return 'is-success'
       } else if (number >= 1 && number < 4) {
           return 'is-warning'
-      } else if (number >= 4 && number < 10) {
+      } else if (number >= 4 && number < 200) {
           return 'is-danger'
-      } else if (number === 10) {
+      } else if (number === 1000) {
         return 'is-primary'
-      } else if (number === 15) {
+      } else if (number === 1500) {
         return 'basic'
       }
     },
@@ -160,6 +178,10 @@ export default {
     returnLink(link) {
       return `https://jira.cainc.com/browse/${link}`;
     },
+
+    dateExists(date) {
+      return date === 'No History Found' ? this.moment(0) : this.moment(date);
+    }
   }
 }
 

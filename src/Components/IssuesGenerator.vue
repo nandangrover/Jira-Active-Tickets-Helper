@@ -19,12 +19,24 @@
         </b-field>
       <b-tag type="is-dark" size="is-medium" class="numberOfTickets">{{activeTicket}}</b-tag>
     </div>
+    <template v-if="selectedOption === 'done'">
+      <div class="align-center">
+        <b-field grouped group-multiline>
+          <div class="control">
+              <b-switch v-model="activeSprintState" size="is-small">Active Sprint</b-switch>
+              <b-switch v-model="lastSprintState"  size="is-small">Last Sprint</b-switch>
+          </div>
+        </b-field>
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
 
 import jira from '../gateways/jira';
+import { mapState, mapMutations } from 'vuex';
+import { find } from 'lodash';
 
 export default {
   name: 'issues-generator',
@@ -63,6 +75,29 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState['filter', ['activeSprint', 'lastSprint']],
+
+    // Toggle Filters for Active sprint and last sprint
+    activeSprintState: {
+      get: function() {
+        return this.activeSprint;
+      },
+      set: function(newVal) {
+        this.$store.commit('toggleActiveSprint', newVal);
+      }
+    },
+
+     lastSprintState: {
+      get: function() {
+        return this.lastSprint;
+      },
+      set: function(newVal) {
+        this.$store.commit('toggleLastSprint', newVal);
+      }
+    }
+  },
+
   methods: {
     async getIssues() {
       this.$root.$emit('update:loading');
@@ -85,20 +120,19 @@ export default {
       this.modifyIssues();
     },
 
-    async getSingleIssue(key) {
-      let issue = await jira.getSingleIssue(key);
-      // Get history of when user started working on that issue
-      let startDate = this.startedWorkOn(issue.changelog);
-      issue.dateStartedWorking = startDate;
-      return issue;
-    },
-
     startedWorkOn(log) {
       let { name } = this.currentUser;
       let { histories } = log;
-      console.log(log);
       histories = histories.filter(({ author }) => author.name === name);
-      return histories[0].created || 'No History Found';
+     return histories[0] ? histories[0].created : 'No History Found';
+    },
+
+    endedWorkOn(log) {
+      let { histories } = log;
+      histories = histories.filter(({ items }) => {
+       return  _.find(items, function(i) { return i.field === 'status' && (i.toString === 'Done' || i.toString === 'Closed'); }) ? true : false;
+      });
+      return histories[histories.length - 1] ? histories[histories.length - 1].created : 'No History Found';
     },
 
     async getCommitInfo(key) {
@@ -110,10 +144,12 @@ export default {
      * Modify issues to include the date parameter
      */
     modifyIssues() {
-      let startDate;
+      let startDate,endDate;
        this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
          startDate = this.startedWorkOn(issue.changelog);
+         endDate = this.endedWorkOn(issue.changelog);
          issue.dateStartedWorking = startDate;
+         issue.dateEndedWorking = endDate;
          return issue;
          });
        this.generateData();
@@ -124,10 +160,9 @@ export default {
       // Empty clipData before generating new issues
       this.clipData = '';
       for (let i = 0; i < this.modifiedIssues.length; i++) {
-          // const issue = await this.getSingleIssue(this.modifiedIssues[i]['id']);
           const commitInfo = await this.getCommitInfo(this.modifiedIssues[i]['id']);
 
-          this.data.push({id: this.modifiedIssues[i]['key'], description: `${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}`, comments: this.modifiedIssues[i].fields.comment.total, status: this.modifiedIssues[i].fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ? commitInfo.summary.pullrequest.overall.state : "EMPTY",  date: this.modifiedIssues[i].dateStartedWorking});
+          this.data.push({id: this.modifiedIssues[i]['key'], description: `${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}`, comments: this.modifiedIssues[i].fields.comment.total, status: this.modifiedIssues[i].fields.status.name, pr: commitInfo.summary.pullrequest.overall.count ? commitInfo.summary.pullrequest.overall.state : "EMPTY",  dateAssigned: this.modifiedIssues[i].dateStartedWorking, dateCompleted: this.modifiedIssues[i].dateEndedWorking});
 
           // For copying data to clipboard
           this.clipData = this.clipData.concat(`${this.modifiedIssues[i]['key']}: ${this.modifiedIssues[i]['fields']['summary']}\n`);
@@ -158,7 +193,7 @@ export default {
   color: #fff;
   background-color: #194067;
   border-radius: 5px;
-  padding: 12px;
+  padding: 10px;
   margin-right: 10px;
   cursor: pointer;
 }
@@ -200,6 +235,12 @@ export default {
 
 .numberOfTickets {
   margin-top: 2px;
+}
+
+.align-center {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 </style>
