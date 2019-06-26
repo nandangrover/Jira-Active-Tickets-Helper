@@ -49591,6 +49591,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 
 
 
@@ -49629,6 +49630,10 @@ __webpack_require__.r(__webpack_exports__);
       {
         id: 'done',
         name: 'Done Tickets'
+      },
+      {
+        id: 'doneActive',
+        name: 'Done Tickets(Active Sprint)'
       }],
       selectedOption: 'active',
     };
@@ -49672,6 +49677,9 @@ __webpack_require__.r(__webpack_exports__);
           break;
         case 'done':
           this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getDoneTickets();
+        break;
+        case 'doneActive':
+          this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getDoneActiveTickets();
         break;
         default:
         break; 
@@ -49911,14 +49919,29 @@ __webpack_require__.r(__webpack_exports__);
     loading(newVal) {
       this.hideScroll = newVal;
     },
+    /**
+     * Filter data according to Selection of active sprint and last Sprint filter
+     */
     activeSprint(value) {
       console.log("hello", value);
-      
-    }
+    },
+
+    lastSprint(value) {
+      console.log("hello", value);
+    },
   },
 
   computed: {
-   ...vuex__WEBPACK_IMPORTED_MODULE_0__["mapGetters"]['filter', { activeSprint: 'activeSprint' }],
+    /**
+     * Get filters for Active Sprint and Last Sprint
+     */
+    activeSprint() {
+      return this.$store.getters.activeSprint;
+    },
+
+    lastSprint() {
+      return this.$store.getters.lastSprint;
+    }
   },
 
   methods: {
@@ -50094,160 +50117,98 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { attrs: { id: "section-issue" } },
-    [
-      _c("div", { staticClass: "feature-button" }, [
-        _c(
-          "button",
-          {
-            staticClass: "button issue-generate",
-            on: { click: _vm.getIssues }
-          },
-          [_vm._v("Generate Issues")]
-        ),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            staticClass: "button issue-generate",
-            class: { disable: _vm.isActive },
-            on: { click: _vm.copyToClipboard }
-          },
-          [_vm._v("Copy Description")]
-        )
-      ]),
-      _vm._v(" "),
-      _c("textarea", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.clipData,
-            expression: "clipData"
-          }
-        ],
-        ref: "inputField",
-        staticClass: "clipTextArea",
-        class: { showArea: _vm.addDisplay },
-        domProps: { value: _vm.clipData },
-        on: {
-          input: function($event) {
-            if ($event.target.composing) {
-              return
-            }
-            _vm.clipData = $event.target.value
-          }
-        }
-      }),
-      _vm._v(" "),
+  return _c("div", { attrs: { id: "section-issue" } }, [
+    _c("div", { staticClass: "feature-button" }, [
       _c(
-        "div",
-        { staticClass: "align-bottom" },
-        [
-          _c(
-            "b-field",
-            [
-              _c(
-                "b-select",
-                {
-                  attrs: { placeholder: "Select a Filter Option" },
-                  model: {
-                    value: _vm.selectedOption,
-                    callback: function($$v) {
-                      _vm.selectedOption = $$v
-                    },
-                    expression: "selectedOption"
-                  }
-                },
-                _vm._l(_vm.options, function(option) {
-                  return _c(
-                    "option",
-                    { key: option.id, domProps: { value: option.id } },
-                    [
-                      _vm._v(
-                        "\n                  " +
-                          _vm._s(option.name) +
-                          "\n              "
-                      )
-                    ]
-                  )
-                }),
-                0
-              )
-            ],
-            1
-          ),
-          _vm._v(" "),
-          _c(
-            "b-tag",
-            {
-              staticClass: "numberOfTickets",
-              attrs: { type: "is-dark", size: "is-medium" }
-            },
-            [_vm._v(_vm._s(_vm.activeTicket))]
-          )
-        ],
-        1
+        "button",
+        { staticClass: "button issue-generate", on: { click: _vm.getIssues } },
+        [_vm._v("Generate Issues")]
       ),
       _vm._v(" "),
-      _vm.selectedOption === "done"
-        ? [
+      _c(
+        "button",
+        {
+          staticClass: "button issue-generate",
+          class: { disable: _vm.isActive },
+          on: { click: _vm.copyToClipboard }
+        },
+        [_vm._v("Copy Description")]
+      )
+    ]),
+    _vm._v(" "),
+    _c("textarea", {
+      directives: [
+        {
+          name: "model",
+          rawName: "v-model",
+          value: _vm.clipData,
+          expression: "clipData"
+        }
+      ],
+      ref: "inputField",
+      staticClass: "clipTextArea",
+      class: { showArea: _vm.addDisplay },
+      domProps: { value: _vm.clipData },
+      on: {
+        input: function($event) {
+          if ($event.target.composing) {
+            return
+          }
+          _vm.clipData = $event.target.value
+        }
+      }
+    }),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "align-bottom" },
+      [
+        _c(
+          "b-field",
+          [
             _c(
-              "div",
-              { staticClass: "align-center" },
-              [
-                _c(
-                  "b-field",
-                  { attrs: { grouped: "", "group-multiline": "" } },
+              "b-select",
+              {
+                attrs: { placeholder: "Select a Filter Option" },
+                model: {
+                  value: _vm.selectedOption,
+                  callback: function($$v) {
+                    _vm.selectedOption = $$v
+                  },
+                  expression: "selectedOption"
+                }
+              },
+              _vm._l(_vm.options, function(option) {
+                return _c(
+                  "option",
+                  { key: option.id, domProps: { value: option.id } },
                   [
-                    _c(
-                      "div",
-                      { staticClass: "control" },
-                      [
-                        _c(
-                          "b-switch",
-                          {
-                            attrs: { size: "is-small" },
-                            model: {
-                              value: _vm.activeSprintState,
-                              callback: function($$v) {
-                                _vm.activeSprintState = $$v
-                              },
-                              expression: "activeSprintState"
-                            }
-                          },
-                          [_vm._v("Active Sprint")]
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "b-switch",
-                          {
-                            attrs: { size: "is-small" },
-                            model: {
-                              value: _vm.lastSprintState,
-                              callback: function($$v) {
-                                _vm.lastSprintState = $$v
-                              },
-                              expression: "lastSprintState"
-                            }
-                          },
-                          [_vm._v("Last Sprint")]
-                        )
-                      ],
-                      1
+                    _vm._v(
+                      "\n                  " +
+                        _vm._s(option.name) +
+                        "\n              "
                     )
                   ]
                 )
-              ],
-              1
+              }),
+              0
             )
-          ]
-        : _vm._e()
-    ],
-    2
-  )
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "b-tag",
+          {
+            staticClass: "numberOfTickets",
+            attrs: { type: "is-dark", size: "is-medium" }
+          },
+          [_vm._v(_vm._s(_vm.activeTicket))]
+        )
+      ],
+      1
+    )
+  ])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -60574,6 +60535,12 @@ axios__WEBPACK_IMPORTED_MODULE_0___default.a.defaults.headers.post['Content-Type
       .then(res => res.data);
   },
 
+  getDoneActiveTickets() {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default.a
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20(status%20%3DDone%20OR%20status%20%3D%20Closed%20)%20AND%20sprint%20in%20openSprints()&fields=key,id,comment,status,summary&expand=changelog&maxResults=5000`)
+      .then(res => res.data);
+  },
+
   getSingleIssue(key) {
     return axios__WEBPACK_IMPORTED_MODULE_0___default.a
       .get(`https://jira.cainc.com/rest/api/2/issue/${key}?expand=changelog&fields=comment,status,summary`)
@@ -60693,6 +60660,8 @@ __webpack_require__.r(__webpack_exports__);
 
   mutations: {
     toggleActiveSprint(state, value) { 
+      console.log("inside store", value);
+      
       state.activeSprint = value;
     },
     toggleLastSprint(state, value) {

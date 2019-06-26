@@ -26,6 +26,12 @@ export default {
       .then(res => res.data);
   },
 
+  getDoneActiveTickets() {
+    return axios
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20(status%20%3DDone%20OR%20status%20%3D%20Closed%20)%20AND%20sprint%20in%20openSprints()&fields=key,id,comment,status,summary&expand=changelog&maxResults=5000`)
+      .then(res => res.data);
+  },
+
   getSingleIssue(key) {
     return axios
       .get(`https://jira.cainc.com/rest/api/2/issue/${key}?expand=changelog&fields=comment,status,summary`)

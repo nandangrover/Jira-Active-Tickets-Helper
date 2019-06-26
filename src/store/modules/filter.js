@@ -11,6 +11,8 @@ export default {
 
   mutations: {
     toggleActiveSprint(state, value) { 
+      console.log("inside store", value);
+      
       state.activeSprint = value;
     },
     toggleLastSprint(state, value) {

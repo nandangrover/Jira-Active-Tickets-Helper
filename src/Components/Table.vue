@@ -89,14 +89,29 @@ export default {
     loading(newVal) {
       this.hideScroll = newVal;
     },
+    /**
+     * Filter data according to Selection of active sprint and last Sprint filter
+     */
     activeSprint(value) {
       console.log("hello", value);
-      
-    }
+    },
+
+    lastSprint(value) {
+      console.log("hello", value);
+    },
   },
 
   computed: {
-   ...mapGetters['filter', { activeSprint: 'activeSprint' }],
+    /**
+     * Get filters for Active Sprint and Last Sprint
+     */
+    activeSprint() {
+      return this.$store.getters.activeSprint;
+    },
+
+    lastSprint() {
+      return this.$store.getters.lastSprint;
+    }
   },
 
   methods: {

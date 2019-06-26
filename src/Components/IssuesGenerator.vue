@@ -19,7 +19,8 @@
         </b-field>
       <b-tag type="is-dark" size="is-medium" class="numberOfTickets">{{activeTicket}}</b-tag>
     </div>
-    <template v-if="selectedOption === 'done'">
+    <!-- Filter without overhead. Currently doesn't work -->
+    <!-- <template v-if="selectedOption === 'done'">
       <div class="align-center">
         <b-field grouped group-multiline>
           <div class="control">
@@ -28,7 +29,7 @@
           </div>
         </b-field>
       </div>
-    </template>
+    </template> -->
   </div>
 </template>
 
@@ -70,6 +71,10 @@ export default {
       {
         id: 'done',
         name: 'Done Tickets'
+      },
+      {
+        id: 'doneActive',
+        name: 'Done Tickets(Active Sprint)'
       }],
       selectedOption: 'active',
     };
@@ -113,6 +118,9 @@ export default {
           break;
         case 'done':
           this.issuesRaw = await jira.getDoneTickets();
+        break;
+        case 'doneActive':
+          this.issuesRaw = await jira.getDoneActiveTickets();
         break;
         default:
         break; 
