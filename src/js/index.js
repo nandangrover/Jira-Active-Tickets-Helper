@@ -5,7 +5,7 @@ import resolveStyleSheet from '../utils/resolveStyleSheet.js';
 import moment from 'moment';
 import store from '../store'
 
-Vue.prototype.moment = moment
+Vue.prototype.moment = moment;
 
 Vue.use(Buefy, {
   defaultIconPack: 'fas'

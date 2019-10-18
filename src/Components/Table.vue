@@ -126,7 +126,9 @@ export default {
         "In Progress": 0,
         "To Do": 1,
         "Ready For Test": 2,
-        "Ready for Review": 3
+        "Ready for Review": 3,
+        "Done": 4,
+        "Closed": 5,
       }
       const mapCommitInfo = {
         "OPEN": 0,

@@ -61,6 +61,10 @@ export default {
       currentUser: [],
       options: [
       {
+        id: 'statusToday',
+        name: 'Status Today'
+      },
+      {
         id: 'active',
         name: 'Active Tickets'
       },
@@ -76,7 +80,7 @@ export default {
         id: 'doneActive',
         name: 'Done Tickets(Active Sprint)'
       }],
-      selectedOption: 'active',
+      selectedOption: 'statusToday',
     };
   },
 
@@ -122,10 +126,37 @@ export default {
         case 'doneActive':
           this.issuesRaw = await jira.getDoneActiveTickets();
         break;
+        case 'statusToday':
+          const raw = await jira.getStatusForToday();
+          this.issuesRaw = this.filterStatusToday(raw);
+        break;
         default:
         break; 
       }
       this.modifyIssues();
+    },
+
+    filterStatusToday(raw) {
+      const { name } = this.currentUser;
+      raw.issues = raw.issues.filter(issue => {
+        const { fields } = issue;
+        const statusName = fields.status.name;
+        
+        // Currently in progress and assigned to you and in progress right now
+        if (fields.assignee && (fields.assignee.name === name) && (statusName === 'In Progress')) {
+          return true;
+        }
+
+         // Done today
+        const endDate = this.endedWorkOn(issue.changelog);
+        const isCompletedToday = this.moment(new Date(endDate)).format('D dd') === this.moment(new Date()).format('D dd');
+
+        if (((fields.status.name === 'Done') || (statusName === 'Closed')) && isCompletedToday) {
+          return true;
+        }
+        return false;
+      });
+      return raw;
     },
 
     startedWorkOn(log) {
@@ -153,13 +184,14 @@ export default {
      */
     modifyIssues() {
       let startDate,endDate;
-       this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
-         startDate = this.startedWorkOn(issue.changelog);
-         endDate = this.endedWorkOn(issue.changelog);
-         issue.dateStartedWorking = startDate;
-         issue.dateEndedWorking = endDate;
-         return issue;
-         });
+      
+      this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
+        startDate = this.startedWorkOn(issue.changelog);
+        endDate = this.endedWorkOn(issue.changelog);
+        issue.dateStartedWorking = startDate;
+        issue.dateEndedWorking = endDate;
+        return issue;
+      });
        this.generateData();
     },
     

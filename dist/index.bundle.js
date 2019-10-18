@@ -49620,6 +49620,10 @@ __webpack_require__.r(__webpack_exports__);
       currentUser: [],
       options: [
       {
+        id: 'statusToday',
+        name: 'Status Today'
+      },
+      {
         id: 'active',
         name: 'Active Tickets'
       },
@@ -49635,7 +49639,7 @@ __webpack_require__.r(__webpack_exports__);
         id: 'doneActive',
         name: 'Done Tickets(Active Sprint)'
       }],
-      selectedOption: 'active',
+      selectedOption: 'statusToday',
     };
   },
 
@@ -49681,10 +49685,37 @@ __webpack_require__.r(__webpack_exports__);
         case 'doneActive':
           this.issuesRaw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getDoneActiveTickets();
         break;
+        case 'statusToday':
+          const raw = await _gateways_jira__WEBPACK_IMPORTED_MODULE_0__["default"].getStatusForToday();
+          this.issuesRaw = this.filterStatusToday(raw);
+        break;
         default:
         break; 
       }
       this.modifyIssues();
+    },
+
+    filterStatusToday(raw) {
+      const { name } = this.currentUser;
+      raw.issues = raw.issues.filter(issue => {
+        const { fields } = issue;
+        const statusName = fields.status.name;
+        
+        // Currently in progress and assigned to you and in progress right now
+        if (fields.assignee && (fields.assignee.name === name) && (statusName === 'In Progress')) {
+          return true;
+        }
+
+         // Done today
+        const endDate = this.endedWorkOn(issue.changelog);
+        const isCompletedToday = this.moment(new Date(endDate)).format('D dd') === this.moment(new Date()).format('D dd');
+
+        if (((fields.status.name === 'Done') || (statusName === 'Closed')) && isCompletedToday) {
+          return true;
+        }
+        return false;
+      });
+      return raw;
     },
 
     startedWorkOn(log) {
@@ -49712,13 +49743,14 @@ __webpack_require__.r(__webpack_exports__);
      */
     modifyIssues() {
       let startDate,endDate;
-       this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
-         startDate = this.startedWorkOn(issue.changelog);
-         endDate = this.endedWorkOn(issue.changelog);
-         issue.dateStartedWorking = startDate;
-         issue.dateEndedWorking = endDate;
-         return issue;
-         });
+      
+      this.modifiedIssues = this.issuesRaw.issues.map((issue) => {
+        startDate = this.startedWorkOn(issue.changelog);
+        endDate = this.endedWorkOn(issue.changelog);
+        issue.dateStartedWorking = startDate;
+        issue.dateEndedWorking = endDate;
+        return issue;
+      });
        this.generateData();
     },
     
@@ -49956,7 +49988,9 @@ __webpack_require__.r(__webpack_exports__);
         "In Progress": 0,
         "To Do": 1,
         "Ready For Test": 2,
-        "Ready for Review": 3
+        "Ready for Review": 3,
+        "Done": 4,
+        "Closed": 5,
       }
       const mapCommitInfo = {
         "OPEN": 0,
@@ -60551,7 +60585,13 @@ axios__WEBPACK_IMPORTED_MODULE_0___default.a.defaults.headers.post['Content-Type
     return axios__WEBPACK_IMPORTED_MODULE_0___default.a
       .get(`https://jira.cainc.com/rest/dev-status/latest/issue/summary?issueId=${key}`)
       .then(res => res.data);
-  }
+  },
+
+  getStatusForToday() {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default.a
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20sprint%20in%20openSprints()&fields=key,id,comment,status,summary,assignee&expand=changelog&maxResults=5000`)
+      .then(res => res.data);
+  },
 });
 
 /***/ }),
@@ -60580,7 +60620,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-vue__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.moment = moment__WEBPACK_IMPORTED_MODULE_4___default.a
+vue__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.moment = moment__WEBPACK_IMPORTED_MODULE_4___default.a;
 
 vue__WEBPACK_IMPORTED_MODULE_0__["default"].use(buefy__WEBPACK_IMPORTED_MODULE_1___default.a, {
   defaultIconPack: 'fas'

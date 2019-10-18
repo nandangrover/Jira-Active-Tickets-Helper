@@ -42,5 +42,11 @@ export default {
     return axios
       .get(`https://jira.cainc.com/rest/dev-status/latest/issue/summary?issueId=${key}`)
       .then(res => res.data);
-  }
+  },
+
+  getStatusForToday() {
+    return axios
+      .get(`https://jira.cainc.com/rest/api/2/search?jql=watcher%20%3D%20currentUser()%20AND%20sprint%20in%20openSprints()&fields=key,id,comment,status,summary,assignee&expand=changelog&maxResults=5000`)
+      .then(res => res.data);
+  },
 }
