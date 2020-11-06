@@ -14,7 +14,7 @@ console.clear();
 
 const shadowElement = document.createElement('div');
 document.body.prepend(shadowElement);
-let shadow = shadowElement.attachShadow({mode: 'closed'});
+let shadow = shadowElement.attachShadow({ mode: 'closed' });
 
 // Map stylesheets to use inside shadow root
 const iconStyle = resolveStyleSheet(chrome.runtime.getURL("fontawesome.css"), document.head);

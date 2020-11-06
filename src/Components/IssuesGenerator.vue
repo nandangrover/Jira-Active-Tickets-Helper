@@ -166,8 +166,8 @@ export default {
         // Done today
         const endDate = this.endedWorkOn(issue.changelog);
         const isCompletedToday =
-          this.moment(new Date(endDate)).format("D dd") ===
-          this.moment(new Date()).format("D dd");
+          this.moment(new Date(endDate).toISOString()).format("D dd") ===
+          this.moment(new Date().toISOString()).format("D dd");
 
         if (
           (fields.status.name === "Done" || statusName === "Closed") &&
