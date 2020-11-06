@@ -193,7 +193,7 @@ export default {
     },
 
     returnLink(link) {
-      return `https://jira.cainc.com/browse/${link}`;
+      return `https://jira.mdsol.com/browse/${link}`;
     },
 
     dateExists(date) {

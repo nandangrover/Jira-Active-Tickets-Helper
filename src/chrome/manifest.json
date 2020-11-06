@@ -1,17 +1,23 @@
 {
   "name": "JIRA Active Tickets Helper",
-  "version": "2.3",
+  "version": "2.4",
   "description": "Jira Chrome Extension to help manage active tickets better.",
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "persistent": false
   },
   "content_scripts": [
     {
-      "matches": ["https://jira.cainc.com/*"],
-      "js": ["index.bundle.js"]
+      "matches": [
+        "https://jira.mdsol.com/*"
+      ],
+      "js": [
+        "index.bundle.js"
+      ]
     }
-  ], 
+  ],
   "page_action": {
     "default_icon": {
       "16": "logo.png",
@@ -29,6 +35,10 @@
     "48": "logo.png",
     "128": "logo.png"
   },
-  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "permissions": [
+    "activeTab",
+    "declarativeContent",
+    "storage"
+  ],
   "manifest_version": 2
 }
